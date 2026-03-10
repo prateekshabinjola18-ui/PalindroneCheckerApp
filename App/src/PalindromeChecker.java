@@ -2,63 +2,27 @@ import java.util.Scanner;
 
 /**
  * ============================================================================
- * MAIN CLASS - PalindromeCheckerApp
+ * MAIN CLASS - PalindromeChecker
  * ============================================================================
- * * Use Case 10: Case-Insensitive & Space-Ignored Palindrome
- * * Description:
- * This class validates a palindrome by explicitly focusing on string
- * normalization. It uses regular expressions to ignore spaces and
- * standardizes character casing before applying the underlying
- * array-based palindrome checking logic.
- * * Flow:
- * 1. Normalize string
- * 2. Apply previous logic
- * * @author Developer
- * @version 10.0
+ * * Use Case 11: Object-Oriented Palindrome Service
  */
 public class PalindromeChecker {
 
-    /**
-     * Application entry point for UC10.
-     *
-     * @param args Command-line arguments
-     */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("--- Advanced Palindrome Checker App ---");
+        // Instantiate the service class (Creating an object of this very class)
+        PalindromeChecker checker = new PalindromeChecker();
+
+        System.out.println("--- Object-Oriented Palindrome Checker App ---");
         System.out.print("Enter a string to validate: ");
         String input = scanner.nextLine();
 
-        // Step 1: Normalize string
-        // Using Regular Expressions: "\\s+" matches one or more whitespace characters
-        // .toLowerCase() ensures case-insensitivity (e.g., 'A' == 'a')
-        String normalizedString = input.replaceAll("\\s+", "").toLowerCase();
+        // Call the method and store the result
+        // This will now work perfectly because the method is defined below!
+        boolean isPalindrome = checker.checkPalindrome(input);
 
-        // Handle edge case for an empty string or a string that was only spaces
-        if (normalizedString.isEmpty()) {
-            System.out.println("\nResult:\n\"" + input + "\" is considered a valid Palindrome (Empty/Only Spaces).");
-            scanner.close();
-            return;
-        }
-
-        // Step 2: Apply previous logic (Data Structure: String / Array using Two-Pointers)
-        char[] charArray = normalizedString.toCharArray();
-        boolean isPalindrome = true;
-
-        int left = 0;
-        int right = charArray.length - 1;
-
-        while (left < right) {
-            if (charArray[left] != charArray[right]) {
-                isPalindrome = false;
-                break;
-            }
-            left++;
-            right--;
-        }
-
-        // Display result
+        // Display the result
         System.out.println("\nResult:");
         if (isPalindrome) {
             System.out.println("\"" + input + "\" is a valid Palindrome!");
@@ -67,5 +31,40 @@ public class PalindromeChecker {
         }
 
         scanner.close();
+    }
+
+    /**
+     * Validates if a given string is a palindrome.
+     * @param str The string to validate
+     * @return true if it is a palindrome, false otherwise
+     */
+    public boolean checkPalindrome(String str) {
+        // Handle null values
+        if (str == null) {
+            return false;
+        }
+
+        // Normalize the string (ignore spaces and case)
+        String normalizedString = str.replaceAll("\\s+", "").toLowerCase();
+
+        // Handle empty strings
+        if (normalizedString.isEmpty()) {
+            return true;
+        }
+
+        // Two-pointer logic
+        char[] charArray = normalizedString.toCharArray();
+        int left = 0;
+        int right = charArray.length - 1;
+
+        while (left < right) {
+            if (charArray[left] != charArray[right]) {
+                return false; // Mismatch found, return immediately
+            }
+            left++;
+            right--;
+        }
+
+        return true; // Valid palindrome
     }
 }
