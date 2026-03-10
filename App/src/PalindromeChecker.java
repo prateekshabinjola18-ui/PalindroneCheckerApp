@@ -1,5 +1,3 @@
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Scanner;
 import java.util.Stack;
 
@@ -7,115 +5,101 @@ import java.util.Stack;
  * ============================================================================
  * MAIN CLASS - PalindromeChecker
  * ============================================================================
- * * Use Case 12: Strategy Pattern for Palindrome Algorithms
+ * * Use Case 13: Performance Comparison
+ * * Description:
+ * This application compares the performance of different palindrome
+ * algorithms (Two-Pointer, Stack, and StringBuilder) by capturing their
+ * execution times using System.nanoTime().
  */
 public class PalindromeChecker {
 
-    // The context holds a reference to the strategy interface
-    private PalindromeStrategy strategy;
-
-    /**
-     * FIXED: Removed 'public' to match the PalindromeStrategy interface's visibility scope.
-     * Injects the strategy at runtime.
-     * @param strategy The specific palindrome algorithm to use
-     */
-    void setStrategy(PalindromeStrategy strategy) {
-        this.strategy = strategy;
-    }
-
-    /**
-     * FIXED: Removed 'public' for consistency.
-     * Executes the currently injected strategy.
-     * @param str The string to validate
-     * @return true if palindrome, false otherwise
-     */
-    boolean check(String str) {
-        if (strategy == null) {
-            throw new IllegalStateException("PalindromeStrategy is not set!");
-        }
-        return strategy.isPalindrome(str);
-    }
-
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        PalindromeChecker appContext = new PalindromeChecker();
 
-        System.out.println("--- Strategy Pattern Palindrome Checker App ---");
-        System.out.print("Enter a string to validate: ");
+        System.out.println("--- Algorithm Performance Comparison App ---");
+        System.out.print("Enter a long string to validate (e.g., repeating a word 100 times): ");
         String input = scanner.nextLine();
 
-        System.out.println("\n--- Results ---");
+        // Normalize string once so preprocessing time doesn't skew algorithm time
+        String normalizedString = input.replaceAll("\\s+", "").toLowerCase();
 
-        // 1. Inject StackStrategy and run
-        appContext.setStrategy(new StackStrategy());
-        boolean isStackPalindrome = appContext.check(input);
-        System.out.println("[Stack Strategy] Is Palindrome? " + isStackPalindrome);
+        System.out.println("\nExecuting algorithms and capturing nano times...\n");
 
-        // 2. Inject DequeStrategy at runtime and run
-        appContext.setStrategy(new DequeStrategy());
-        boolean isDequePalindrome = appContext.check(input);
-        System.out.println("[Deque Strategy] Is Palindrome? " + isDequePalindrome);
+        // --- Approach 1: Highly Optimized Two-Pointer ---
+        long startTime1 = System.nanoTime();
+        boolean isPal1 = checkWithTwoPointers(normalizedString);
+        long endTime1 = System.nanoTime();
+        long duration1 = endTime1 - startTime1;
+
+        // --- Approach 2: Stack-Based (Object Overhead) ---
+        long startTime2 = System.nanoTime();
+        boolean isPal2 = checkWithStack(normalizedString);
+        long endTime2 = System.nanoTime();
+        long duration2 = endTime2 - startTime2;
+
+        // --- Approach 3: Built-in StringBuilder Reverse ---
+        long startTime3 = System.nanoTime();
+        boolean isPal3 = checkWithStringBuilder(normalizedString);
+        long endTime3 = System.nanoTime();
+        long duration3 = endTime3 - startTime3;
+
+        // Displaying Results
+        System.out.println("==================================================");
+        System.out.println("               PERFORMANCE RESULTS                ");
+        System.out.println("==================================================");
+        System.out.printf("%-20s | %-10s | %-15s%n", "Algorithm", "Result", "Time (ns)");
+        System.out.println("--------------------------------------------------");
+        System.out.printf("%-20s | %-10s | %d ns%n", "Two-Pointer (Array)", isPal1, duration1);
+        System.out.printf("%-20s | %-10s | %d ns%n", "Stack (Objects)", isPal2, duration2);
+        System.out.printf("%-20s | %-10s | %d ns%n", "StringBuilder API", isPal3, duration3);
+        System.out.println("==================================================");
 
         scanner.close();
     }
-}
 
-/**
- * ============================================================================
- * INTERFACE - PalindromeStrategy
- * ============================================================================
- * Defines the contract that all concrete strategies must follow.
- */
-interface PalindromeStrategy {
-    boolean isPalindrome(String str);
-}
+    /**
+     * Algorithm 1: Two-Pointer Technique
+     * Highly efficient, O(1) space complexity.
+     */
+    static boolean checkWithTwoPointers(String str) {
+        if (str == null || str.isEmpty()) return true;
+        int left = 0;
+        int right = str.length() - 1;
+        while (left < right) {
+            if (str.charAt(left) != str.charAt(right)) {
+                return false;
+            }
+            left++;
+            right--;
+        }
+        return true;
+    }
 
-/**
- * ============================================================================
- * CONCRETE STRATEGY 1 - StackStrategy
- * ============================================================================
- * Validates a palindrome using a Stack (LIFO principle).
- */
-class StackStrategy implements PalindromeStrategy {
-    @Override
-    public boolean isPalindrome(String str) {
-        String cleanStr = str.replaceAll("\\s+", "").toLowerCase();
+    /**
+     * Algorithm 2: Stack Technique
+     * Slower due to creating Character objects and Stack overhead.
+     */
+    static boolean checkWithStack(String str) {
+        if (str == null || str.isEmpty()) return true;
         Stack<Character> stack = new Stack<>();
-
-        for (char c : cleanStr.toCharArray()) {
+        for (char c : str.toCharArray()) {
             stack.push(c);
         }
-
-        for (char c : cleanStr.toCharArray()) {
+        for (char c : str.toCharArray()) {
             if (stack.pop() != c) {
                 return false;
             }
         }
         return true;
     }
-}
 
-/**
- * ============================================================================
- * CONCRETE STRATEGY 2 - DequeStrategy
- * ============================================================================
- * Validates a palindrome using a Deque (comparing front and rear simultaneously).
- */
-class DequeStrategy implements PalindromeStrategy {
-    @Override
-    public boolean isPalindrome(String str) {
-        String cleanStr = str.replaceAll("\\s+", "").toLowerCase();
-        Deque<Character> deque = new ArrayDeque<>();
-
-        for (char c : cleanStr.toCharArray()) {
-            deque.addLast(c);
-        }
-
-        while (deque.size() > 1) {
-            if (deque.removeFirst() != deque.removeLast()) {
-                return false;
-            }
-        }
-        return true;
+    /**
+     * Algorithm 3: StringBuilder Reverse
+     * Very clean code. Now optimized using contentEquals!
+     */
+    static boolean checkWithStringBuilder(String str) {
+        if (str == null) return false;
+        // FIXED: Replaced .equals(...toString()) with .contentEquals()
+        return str.contentEquals(new StringBuilder(str).reverse());
     }
 }
