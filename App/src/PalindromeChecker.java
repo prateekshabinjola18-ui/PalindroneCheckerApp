@@ -1,65 +1,62 @@
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.Scanner;
-import java.util.Stack;
 
 /**
  * ============================================================================
  * MAIN CLASS - PalindromeCheckerApp
  * ============================================================================
- * * Use Case 6: Queue + Stack Based Palindrome Check
+ * * Use Case 7: Deque-Based Optimized Palindrome Checker
  * * Description:
- * This class validates a palindrome by demonstrating the behavioral
- * difference between a Queue (FIFO) and a Stack (LIFO).
- * It adds characters to both structures, then compares the output
- * of dequeuing (front-to-back) against popping (back-to-front).
+ * This class validates a palindrome using a Deque (Double Ended Queue).
+ * It demonstrates optimized data handling by comparing elements from both
+ * the front and rear simultaneously, eliminating the need for multiple
+ * or separate reversal data structures.
  * * Flow:
- * - Enqueue characters to Queue
- * - Push characters to Stack
- * - Compare dequeue vs pop
+ * - Insert characters into deque
+ * - Remove first & last
+ * - Compare until empty
  * * @author Developer
- * @version 6.0
+ * @version 7.0
  */
 public class PalindromeChecker {
 
     /**
-     * Application entry point for UC6.
+     * Application entry point for UC7.
      *
      * @param args Command-line arguments
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("--- Queue + Stack Palindrome Checker App ---");
+        System.out.println("--- Deque-Based Palindrome Checker App ---");
         System.out.print("Enter a string to validate: ");
         String input = scanner.nextLine();
 
         // Pre-processing: Removing spaces and converting to lowercase
+        // to handle sentences properly (e.g., "Madam In Eden Im Adam")
         String cleanString = input.replaceAll("\\s+", "").toLowerCase();
 
-        // Initialize the Data Structures
-        // Note: Queue is an interface in Java, so we instantiate it using a LinkedList
-        Queue<Character> queue = new LinkedList<>();
-        Stack<Character> stack = new Stack<>();
+        // Initialize the Deque
+        // ArrayDeque is generally faster than LinkedList for Deque operations
+        Deque<Character> deque = new ArrayDeque<>();
 
-        // Step 1 & 2: Enqueue characters to Queue and Push characters to Stack
+        // Step 1: Insert characters into deque
         for (int i = 0; i < cleanString.length(); i++) {
-            char c = cleanString.charAt(i);
-            queue.add(c);  // Enqueue operation
-            stack.push(c); // Push operation
+            deque.addLast(cleanString.charAt(i));
         }
 
         boolean isPalindrome = true;
 
-        // Step 3: Compare dequeue vs pop
-        while (!queue.isEmpty() && !stack.isEmpty()) {
-            char queueChar = queue.remove(); // Dequeue: gets character in original order (FIFO)
-            char stackChar = stack.pop();    // Pop: gets character in reverse order (LIFO)
+        // Step 2 & 3: Remove first & last and compare until empty (or 1 element left)
+        // A palindrome with an odd length will leave exactly 1 element in the middle
+        while (deque.size() > 1) {
+            char frontChar = deque.removeFirst(); // Front Access
+            char rearChar = deque.removeLast();   // Rear Access
 
-            // Logical Comparison
-            if (queueChar != stackChar) {
+            if (frontChar != rearChar) {
                 isPalindrome = false; // Mismatch found
-                break;                // Exit early to save time
+                break;                // Optimized Data Handling: Exit early
             }
         }
 
