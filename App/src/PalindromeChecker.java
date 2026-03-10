@@ -1,64 +1,94 @@
-import java.util.ArrayDeque;
-import java.util.Deque;
 import java.util.Scanner;
 
 /**
  * ============================================================================
  * MAIN CLASS - PalindromeCheckerApp
  * ============================================================================
- * * Use Case 7: Deque-Based Optimized Palindrome Checker
+ * * Use Case 8: Linked List Based Palindrome Checker
  * * Description:
- * This class validates a palindrome using a Deque (Double Ended Queue).
- * It demonstrates optimized data handling by comparing elements from both
- * the front and rear simultaneously, eliminating the need for multiple
- * or separate reversal data structures.
+ * This class validates a palindrome using a Custom Singly Linked List.
+ * It demonstrates advanced traversal techniques such as the Fast and Slow
+ * Pointer approach to find the middle, and an in-place reversal of the
+ * second half to allow sequential comparison without extra memory overhead.
  * * Flow:
- * - Insert characters into deque
- * - Remove first & last
- * - Compare until empty
+ * 1. Convert string to linked list
+ * 2. Reverse second half
+ * 3. Compare halves
  * * @author Developer
- * @version 7.0
+ * @version 8.0
  */
 public class PalindromeChecker {
 
+    // Define the Singly Linked List Node structure
+    static class Node {
+        char data;
+        Node next;
+
+        Node(char data) {
+            this.data = data;
+            this.next = null;
+        }
+    }
+
     /**
-     * Application entry point for UC7.
+     * Application entry point for UC8.
      *
      * @param args Command-line arguments
      */
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("--- Deque-Based Palindrome Checker App ---");
+        System.out.println("--- Linked List Palindrome Checker App ---");
         System.out.print("Enter a string to validate: ");
         String input = scanner.nextLine();
 
         // Pre-processing: Removing spaces and converting to lowercase
-        // to handle sentences properly (e.g., "Madam In Eden Im Adam")
         String cleanString = input.replaceAll("\\s+", "").toLowerCase();
 
-        // Initialize the Deque
-        // ArrayDeque is generally faster than LinkedList for Deque operations
-        Deque<Character> deque = new ArrayDeque<>();
-
-        // Step 1: Insert characters into deque
-        for (int i = 0; i < cleanString.length(); i++) {
-            deque.addLast(cleanString.charAt(i));
+        if (cleanString.isEmpty()) {
+            System.out.println("\nResult:\n\"" + input + "\" is considered a valid Palindrome (Empty).");
+            scanner.close();
+            return;
         }
 
+        // Step 1: Convert string to linked list
+        Node head = new Node(cleanString.charAt(0));
+        Node current = head;
+        for (int i = 1; i < cleanString.length(); i++) {
+            current.next = new Node(cleanString.charAt(i));
+            current = current.next; // Node Traversal
+        }
+
+        // --- Fast and Slow Pointer Technique ---
+        // Used to find the middle of the linked list efficiently.
+        Node slow = head;
+        Node fast = head;
+        while (fast != null && fast.next != null) {
+            slow = slow.next;       // Moves 1 step
+            fast = fast.next.next;  // Moves 2 steps
+        }
+        // When 'fast' reaches the end, 'slow' is at the middle.
+
+        // Step 2: Reverse the second half (In-Place Reversal)
+        // Reverses the pointers in the second half of the list without creating new nodes.
+        Node secondHalfHead = reverseList(slow);
+
+        // Step 3: Compare halves
+        Node firstHalfPtr = head;
+        Node secondHalfPtr = secondHalfHead;
         boolean isPalindrome = true;
 
-        // Step 2 & 3: Remove first & last and compare until empty (or 1 element left)
-        // A palindrome with an odd length will leave exactly 1 element in the middle
-        while (deque.size() > 1) {
-            char frontChar = deque.removeFirst(); // Front Access
-            char rearChar = deque.removeLast();   // Rear Access
-
-            if (frontChar != rearChar) {
-                isPalindrome = false; // Mismatch found
-                break;                // Optimized Data Handling: Exit early
+        while (secondHalfPtr != null) {
+            if (firstHalfPtr.data != secondHalfPtr.data) {
+                isPalindrome = false;
+                break;
             }
+            firstHalfPtr = firstHalfPtr.next;
+            secondHalfPtr = secondHalfPtr.next;
         }
+
+        // Optional but good practice: Restore the list back to its original state
+        // reverseList(secondHalfHead);
 
         // Display result
         System.out.println("\nResult:");
@@ -69,5 +99,22 @@ public class PalindromeChecker {
         }
 
         scanner.close();
+    }
+
+    /**
+     * Helper method to reverse a singly linked list in-place.
+     * * @param head The starting node of the list to reverse
+     * @return The new head of the reversed list
+     */
+    private static Node reverseList(Node head) {
+        Node prev = null;
+        Node curr = head;
+        while (curr != null) {
+            Node nextTemp = curr.next; // Store next node
+            curr.next = prev;          // Reverse the link
+            prev = curr;               // Move prev forward
+            curr = nextTemp;           // Move curr forward
+        }
+        return prev;
     }
 }
